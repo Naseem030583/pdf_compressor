@@ -1,0 +1,110 @@
+{% extends 'compressor/base.html' %}
+
+{% block title %}PDF Compressor - Reduce PDF Size{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="hero">
+    <h1>Compress PDF to Any Size</h1>
+    <p>Upload your PDF, set a target size, and download the compressed file instantly.</p>
+</div>
+
+<!-- Upload Form -->
+<div class="card">
+
+    <form method="POST" enctype="multipart/form-data" id="compressForm">
+        {% csrf_token %}
+
+        <!-- File Upload -->
+        <div class="form-group">
+            <label>Select PDF File</label>
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Click to browse or drag & drop your PDF</div>
+                <div class="upload-subtext">Maximum file size: 50 MB</div>
+                {{ form.original_file }}
+            </div>
+            <div class="file-selected" id="fileInfo">
+                📎 <span id="fileName"></span> (<span id="fileSize"></span>)
+            </div>
+            {% if form.original_file.errors %}
+                <ul class="errorlist">
+                    {% for error in form.original_file.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <!-- Target Size -->
+        <div class="form-group">
+            <label>Target Size</label>
+            <div class="size-input-wrapper">
+                {{ form.target_size_kb }}
+                <span class="size-unit">KB</span>
+            </div>
+            {% if form.target_size_kb.errors %}
+                <ul class="errorlist">
+                    {% for error in form.target_size_kb.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-primary" id="submitBtn">
+            <span class="spinner" id="spinner"></span>
+            <span id="btnText">🚀 Compress PDF</span>
+        </button>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // File selection display
+    const fileInput = document.querySelector('input[type="file"]');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const uploadZone = document.getElementById('uploadZone');
+
+    fileInput.addEventListener('change', function () {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            fileName.textContent = file.name;
+            const sizeKB = (file.size / 1024).toFixed(1);
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            fileSize.textContent = sizeKB > 1024 ? sizeMB + ' MB' : sizeKB + ' KB';
+            fileInfo.classList.add('show');
+            uploadZone.style.borderColor = 'var(--success)';
+        }
+    });
+
+    // Drag & drop styling
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', () => {
+        uploadZone.classList.remove('dragover');
+    });
+
+    // Form submit loading state
+    document.getElementById('compressForm').addEventListener('submit', function () {
+        const btn = document.getElementById('submitBtn');
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btnText');
+        btn.disabled = true;
+        spinner.style.display = 'inline-block';
+        btnText.textContent = 'Compressing... Please wait';
+    });
+</script>
+{% endblock %}

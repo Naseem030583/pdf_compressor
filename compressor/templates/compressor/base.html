@@ -1,0 +1,572 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PDF Compressor{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f5f7fb;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --bg-input: #f0f3f9;
+            --border: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent: #059669;
+            --accent-light: #10b981;
+            --accent-hover: #047857;
+            --accent-glow: rgba(5, 150, 105, 0.08);
+            --accent-glow-strong: rgba(5, 150, 105, 0.14);
+            --success: #059669;
+            --success-light: #10b981;
+            --success-bg: rgba(5, 150, 105, 0.08);
+            --warning: #d97706;
+            --warning-bg: rgba(217, 119, 6, 0.08);
+            --danger: #dc2626;
+            --danger-bg: rgba(220, 38, 38, 0.06);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.08);
+            --radius: 14px;
+            --radius-sm: 10px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ============ Navbar ============ */
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 800;
+            font-size: 1.15rem;
+        }
+
+        .navbar-brand .icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 3px 10px rgba(5, 150, 105, 0.25);
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .navbar-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+        }
+
+        .navbar-links a:hover {
+            color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .navbar-links a.active {
+            color: var(--accent);
+            background: var(--accent-glow-strong);
+        }
+
+        /* ============ Main Content ============ */
+        .container {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+        }
+
+        /* ============ Hero ============ */
+        .hero {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* ============ Cards ============ */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ============ Form ============ */
+        .form-group {
+            margin-bottom: 0.8rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group .help-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--bg-input);
+            border: 2px solid transparent;
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: transparent;
+            background: white;
+            box-shadow: none;
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* ============ File Upload ============ */
+        .upload-zone {
+            border: 2px dashed var(--border-hover);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--bg-input);
+            position: relative;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent);
+            background: var(--accent-glow-strong);
+            transform: scale(1.01);
+        }
+
+        .upload-zone .upload-icon { font-size: 2.5rem; margin-bottom: 0.6rem; }
+
+        .upload-zone .upload-text {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.2rem;
+        }
+
+        .upload-zone .upload-subtext {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-selected {
+            display: none;
+            padding: 0.7rem 1rem;
+            background: var(--accent-glow-strong);
+            border: 1px solid rgba(5, 150, 105, 0.25);
+            border-radius: var(--radius-sm);
+            margin-top: 1rem;
+            font-size: 0.88rem;
+            color: var(--accent);
+            font-weight: 600;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-selected.show { display: flex; }
+
+        /* ============ Size Input ============ */
+        .size-input-wrapper {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .size-input-wrapper .form-input {
+            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+        }
+
+        .size-unit {
+            background: var(--accent);
+            color: white;
+            padding: 0.8rem 1.3rem;
+            font-weight: 700;
+            font-size: 0.88rem;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        /* ============ Buttons ============ */
+        .btn-primary {
+            width: 100%;
+            padding: 0.95rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 12px rgba(5, 150, 105, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.35);
+        }
+
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-primary:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.65rem 1.4rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-input);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-success {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--success), var(--success-light));
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 3px 12px rgba(5, 150, 105, 0.25);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.35);
+        }
+
+        /* ============ Result Stats ============ */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1.1rem;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-value.original { color: var(--text-secondary); }
+        .stat-value.compressed { color: var(--accent); }
+        .stat-value.target { color: var(--warning); }
+        .stat-value.reduction { color: var(--success); }
+
+        /* ============ Progress Bar ============ */
+        .progress-visual { margin: 1.5rem 0; }
+
+        .progress-bar-bg {
+            height: 10px;
+            background: var(--bg-input);
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--accent));
+            border-radius: 5px;
+            transition: width 1s ease;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.4rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* ============ Badges ============ */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0.25rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-success { background: var(--success-bg); color: var(--success); }
+        .badge-warning { background: var(--warning-bg); color: var(--warning); }
+        .badge-danger { background: var(--danger-bg); color: var(--danger); }
+
+        /* ============ Messages ============ */
+        .message {
+            padding: 0.9rem 1.1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .message-info {
+            background: var(--accent-glow);
+            border: 1px solid rgba(5, 150, 105, 0.2);
+            color: var(--accent);
+        }
+
+        .message-success {
+            background: var(--success-bg);
+            border: 1px solid rgba(5, 150, 105, 0.2);
+            color: var(--success);
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* ============ History Table ============ */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            font-weight: 700;
+            padding: 0.7rem 0.8rem;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .history-table td {
+            padding: 0.75rem 0.8rem;
+            font-size: 0.88rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .history-table tr:hover td { background: var(--bg-input); }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+
+        /* ============ Spinner ============ */
+        .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .errorlist {
+            list-style: none;
+            padding: 0;
+            margin: 0.5rem 0 0 0;
+        }
+
+        .errorlist li {
+            color: var(--danger);
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 0.8rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            border-top: 1px solid var(--border);
+            margin-top: 0;
+            font-weight: 500;
+        }
+
+        @media (max-width: 640px) {
+            .container { padding: 1.5rem 1rem; }
+            .hero h1 { font-size: 1.5rem; }
+            .result-grid { grid-template-columns: 1fr; }
+            .card { padding: 1.5rem; }
+            .upload-zone { padding: 1.5rem; }
+            .actions { flex-direction: column; }
+            .btn-success, .btn-secondary { width: 100%; justify-content: center; }
+            .navbar { padding: 0 1rem; }
+        }
+    </style>
+</head>
+<body>
+    {% if request.user.is_superuser %}
+    <nav class="navbar">
+        <a href="{% url 'home' %}" class="navbar-brand">
+            <span class="icon">📄</span>
+            PDF Compressor
+        </a>
+        <div class="navbar-links">
+            <a href="{% url 'history' %}" class="{% if request.resolver_match.url_name == 'history' %}active{% endif %}">History</a>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,154 @@
+{% extends 'compressor/base.html' %}
+
+{% block title %}Activity Log - PDF Compressor{% endblock %}
+
+{% block content %}
+
+<div class="hero">
+    <h1>Activity Log</h1>
+    <p>Complete compression history with visitor details.</p>
+</div>
+
+<!-- Summary Stats -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-bottom: 1.2rem;">
+    <div class="stat-card">
+        <div class="stat-label">Total Compressions</div>
+        <div class="stat-value compressed" style="font-size: 1.3rem;">{{ total_compressions }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Successful</div>
+        <div class="stat-value reduction" style="font-size: 1.3rem;">{{ successful }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Saved</div>
+        <div class="stat-value target" style="font-size: 1.3rem;">{{ total_saved_mb }} MB</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Unique Visitors</div>
+        <div class="stat-value original" style="font-size: 1.3rem;">{{ unique_ips }}</div>
+    </div>
+</div>
+
+<!-- Log Entries -->
+{% if files %}
+    {% for file in files %}
+    <div class="card" style="padding: 1.2rem; margin-bottom: 0.8rem;">
+
+        <!-- Header Row -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 700; font-size: 0.95rem;">📄 {{ file.original_filename }}</span>
+                {% if file.status == 'completed' %}
+                    <span class="badge badge-success">Completed</span>
+                {% elif file.status == 'failed' %}
+                    <span class="badge badge-danger">Failed</span>
+                {% elif file.status == 'processing' %}
+                    <span class="badge badge-warning">Processing</span>
+                {% else %}
+                    <span class="badge" style="background: var(--bg-input); color: var(--text-muted);">Pending</span>
+                {% endif %}
+            </div>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">
+                {{ file.created_at|date:"d M Y, h:i:s A" }}
+            </span>
+        </div>
+
+        <!-- Details Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; font-size: 0.82rem;">
+
+            <!-- Compression Info -->
+            <div style="background: var(--bg-input); border-radius: 8px; padding: 0.7rem;">
+                <div style="font-weight: 700; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">📊 Compression</div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                    <span style="color: var(--text-muted);">Original</span>
+                    <span class="mono">{{ file.original_size_kb }} KB</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                    <span style="color: var(--text-muted);">Target</span>
+                    <span class="mono">{{ file.target_size_kb }} KB</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                    <span style="color: var(--text-muted);">Result</span>
+                    <span class="mono" style="color: var(--accent); font-weight: 600;">{% if file.compressed_size_kb %}{{ file.compressed_size_kb }} KB{% else %}—{% endif %}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                    <span style="color: var(--text-muted);">Saved</span>
+                    <span style="color: var(--success); font-weight: 700;">{% if file.reduction_percent %}{{ file.reduction_percent }}%{% else %}—{% endif %}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Pages</span>
+                    <span class="mono">{% if file.total_pages %}{{ file.total_pages }}{% else %}—{% endif %}</span>
+                </div>
+            </div>
+
+            <!-- Visitor Info -->
+            <div style="background: var(--bg-input); border-radius: 8px; padding: 0.7rem;">
+                <div style="font-weight: 700; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">🌐 Visitor</div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                    <span style="color: var(--text-muted);">IP</span>
+                    <span class="mono" style="color: var(--accent);">{% if file.ip_address %}{{ file.ip_address }}{% else %}—{% endif %}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                    <span style="color: var(--text-muted);">Browser</span>
+                    <span>{% if file.browser %}{{ file.browser }}{% else %}—{% endif %}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                    <span style="color: var(--text-muted);">OS</span>
+                    <span>{% if file.operating_system %}{{ file.operating_system }}{% else %}—{% endif %}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Device</span>
+                    <span>{% if file.device_type %}{{ file.device_type }}{% else %}—{% endif %}</span>
+                </div>
+            </div>
+
+            <!-- Performance & Download Info -->
+            <div style="background: var(--bg-input); border-radius: 8px; padding: 0.7rem;">
+                <div style="font-weight: 700; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">⚡ Details</div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                    <span style="color: var(--text-muted);">Time</span>
+                    <span class="mono">{% if file.processing_time_seconds %}{{ file.processing_time_seconds }}s{% else %}—{% endif %}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                    <span style="color: var(--text-muted);">Downloaded</span>
+                    <span>{% if file.downloaded %}✅ Yes{% else %}❌ No{% endif %}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                    <span style="color: var(--text-muted);">Downloads</span>
+                    <span class="mono">{{ file.download_count }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Last Download</span>
+                    <span style="font-size: 0.75rem;">{% if file.downloaded_at %}{{ file.downloaded_at|date:"d M, h:i A" }}{% else %}—{% endif %}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        {% if file.error_message %}
+        <div style="margin-top: 0.5rem; padding: 0.5rem 0.7rem; background: var(--accent-glow); border-radius: 6px; font-size: 0.78rem; color: var(--accent);">
+            💡 {{ file.error_message }}
+        </div>
+        {% endif %}
+
+        <!-- Download Action -->
+        {% if file.status == 'completed' and file.compressed_file %}
+        <div style="margin-top: 0.5rem; text-align: right;">
+            <a href="{% url 'download' file.pk %}" class="btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.78rem;">
+                ⬇️ Download
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+
+{% else %}
+    <div class="card" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+        <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">📭</div>
+        <p style="font-size: 1rem; margin-bottom: 0.3rem;">No activity yet</p>
+        <p style="font-size: 0.85rem;">Compressions will appear here with full details.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

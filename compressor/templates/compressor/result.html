@@ -1,0 +1,119 @@
+{% extends 'compressor/base.html' %}
+
+{% block title %}Compression Result - PDF Compressor{% endblock %}
+
+{% block content %}
+
+{% if pdf.status == 'completed' %}
+<!-- Success -->
+<div class="hero">
+    <h1>✅ Compression Complete!</h1>
+    <p>Your PDF has been successfully compressed.</p>
+</div>
+
+<div class="card">
+    <div class="card-header">📊 Compression Results</div>
+
+    <!-- Stats Grid -->
+    <div class="result-grid">
+        <div class="stat-card">
+            <div class="stat-label">Original Size</div>
+            <div class="stat-value original">{{ pdf.original_size_kb }} KB</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Compressed Size</div>
+            <div class="stat-value compressed">{{ pdf.compressed_size_kb }} KB</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Target Size</div>
+            <div class="stat-value target">{{ pdf.target_size_kb }} KB</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Reduction</div>
+            <div class="stat-value reduction">{{ pdf.reduction_percent }}%</div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-visual">
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBar" style="width: 0%"></div>
+        </div>
+        <div class="progress-labels">
+            <span>{{ pdf.compressed_size_kb }} KB (compressed)</span>
+            <span>{{ pdf.original_size_kb }} KB (original)</span>
+        </div>
+    </div>
+
+    <!-- Message -->
+    {% if pdf.error_message %}
+    <div class="message message-info">
+        💡 {{ pdf.error_message }}
+    </div>
+    {% endif %}
+
+    <!-- File Info -->
+    <div style="margin-bottom: 1.5rem; padding: 0.8rem 1rem; background: var(--bg-primary); border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+            <span style="color: var(--text-muted);">Original File:</span>
+            <span class="mono">{{ pdf.original_filename }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-top: 0.4rem;">
+            <span style="color: var(--text-muted);">Compressed File:</span>
+            <span class="mono">{{ pdf.compressed_filename }}</span>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+        <a href="{% url 'download' pdf.pk %}" class="btn-success">
+            ⬇️ Download Compressed PDF
+        </a>
+        <a href="{% url 'home' %}" class="btn-secondary">
+            ← Compress Another
+        </a>
+    </div>
+</div>
+
+{% elif pdf.status == 'failed' %}
+<!-- Failed -->
+<div class="hero">
+    <h1>❌ Compression Failed</h1>
+    <p>Something went wrong during compression.</p>
+</div>
+
+<div class="card">
+    {% if pdf.error_message %}
+    <div class="message" style="background: var(--danger-bg); border: 1px solid rgba(239,68,68,0.3); color: var(--danger);">
+        ⚠️ {{ pdf.error_message }}
+    </div>
+    {% endif %}
+
+    <div class="actions">
+        <a href="{% url 'home' %}" class="btn-primary" style="width: auto; display: inline-flex; padding: 0.8rem 2rem;">
+            ← Try Again
+        </a>
+    </div>
+</div>
+
+{% else %}
+<!-- Processing -->
+<div class="hero">
+    <h1>⏳ Processing...</h1>
+    <p>Your PDF is being compressed. Please wait.</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if pdf.status == 'completed' and pdf.original_size_kb > 0 %}
+<script>
+    // Animate progress bar
+    setTimeout(() => {
+        const percent = ({{ pdf.compressed_size_kb }} / {{ pdf.original_size_kb }}) * 100;
+        document.getElementById('progressBar').style.width = percent + '%';
+    }, 200);
+</script>
+{% endif %}
+{% endblock %}
